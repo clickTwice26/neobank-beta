@@ -47,6 +47,7 @@ def dashboard():
     
     # Get category totals for current month
     category_totals = Expense.get_category_totals(user_id, current_year, current_month)
+    category_stats = category_totals  # Alias for template compatibility
     
     # Get month name
     month_name = calendar.month_name[current_month]
@@ -57,6 +58,7 @@ def dashboard():
                          recent_expenses=recent_expenses,
                          monthly_total=monthly_total,
                          category_totals=category_totals,
+                         category_stats=category_stats,
                          current_month=current_month_year)
 
 @main_bp.route('/profile')

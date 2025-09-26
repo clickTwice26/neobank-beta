@@ -1,204 +1,237 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Expense Tracker{% endblock %}
+{% block title %}Dashboard - ExpenseTracker{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 p-4 pb-24">
-    <!-- Header Section -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ current_month }}</h1>
-            <p class="text-gray-500 text-sm">Track your spending</p>
-        </div>
-        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-white"></i>
-        </div>
-    </div>
-
-    <!-- Balance Cards -->
-    <div class="grid grid-cols-2 gap-4 mb-8">
-        <!-- Income Card -->
-        <div class="income-card card">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-white/80 text-sm font-medium">Income</p>
-                    <p class="text-2xl font-bold text-white">${{ "%.0f"|format(monthly_total * 4) }}</p>
-                    <p class="text-white/60 text-xs mt-1">Monthly budget</p>
+<!-- Main Dashboard Container -->
+<div class="container mx-auto px-4 py-6 max-w-md">
+    
+    <!-- Wallet Balance Card -->
+    <div class="gradient-purple rounded-3xl p-6 mb-6 text-white relative overflow-hidden">
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-white/80 font-medium">Total Remaining Budget</span>
+                <i class="fas fa-wallet text-white/60"></i>
+            </div>
+            <div class="mb-4">
+                <h2 class="text-3xl font-bold mb-1">${{ "%.2f"|format(monthly_total or 0) }}</h2>
+                <span class="text-sm text-white/70">Current Month</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="status-badge" style="background: rgba(34, 197, 94, 0.2); color: #22c55e;">
+                    <i class="fas fa-arrow-up text-xs mr-1"></i>
+                    On Track
                 </div>
-                <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-up text-white text-sm"></i>
-                </div>
+                <span class="text-xs text-white/60">Your best spending limit on track</span>
             </div>
         </div>
-
-        <!-- Expenses Card -->
-        <div class="spending-card card">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-white/80 text-sm font-medium">Expenses</p>
-                    <p class="text-2xl font-bold text-white">${{ "%.0f"|format(monthly_total) }}</p>
-                    <p class="text-white/60 text-xs mt-1">This month</p>
-                </div>
-                <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-down text-white text-sm"></i>
-                </div>
-            </div>
-        </div>
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
     </div>
 
-    <!-- Spending Progress -->
-    <div class="card mb-8">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Safe to Spend</h3>
-            <span class="text-2xl font-bold text-gray-900">${{ "%.0f"|format((monthly_total * 4) - monthly_total) }}</span>
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="card text-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-credit-card text-blue-600 text-lg"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">${{ "%.0f"|format(monthly_total or 0) }}</p>
+            <p class="text-xs text-gray-500 font-medium">Current Balance</p>
         </div>
         
-        <div class="relative">
-            <div class="flex items-center justify-center mb-4">
-                <div class="relative w-32 h-32">
-                    <svg class="w-32 h-32 progress-ring" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="#f1f5f9" stroke-width="8"/>
-                        <circle 
-                            cx="60" cy="60" r="54" 
-                            fill="none" 
-                            stroke="url(#gradient)" 
-                            stroke-width="8"
-                            stroke-linecap="round"
-                            stroke-dasharray="339.292"
-                            stroke-dashoffset="{{ 339.292 - (339.292 * (monthly_total / (monthly_total * 4) if monthly_total > 0 else 0)) }}"
-                            class="progress-ring-circle">
-                        </circle>
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500">Left to spend</p>
-                        </div>
-                    </div>
+        <div class="card text-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-chart-line text-purple-600 text-lg"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">{{ recent_expenses|length }}</p>
+            <p class="text-xs text-gray-500 font-medium">Transactions</p>
+        </div>
+        
+        <div class="card text-center">
+            <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-piggy-bank text-green-600 text-lg"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900">${{ "%.0f"|format((5000 - (monthly_total or 0))) }}</p>
+            <p class="text-xs text-gray-500 font-medium">Saved</p>
+        </div>
+    </div>
+
+    <!-- Expense/Income Toggle -->
+    <div class="flex bg-gray-100 rounded-2xl p-1 mb-6">
+        <button class="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-medium text-sm transition-all">
+            Expense
+        </button>
+        <button class="flex-1 py-3 px-4 rounded-xl text-gray-600 font-medium text-sm hover:bg-gray-200 transition-all">
+            Income
+        </button>
+    </div>
+
+    <!-- Top Spending Categories -->
+    <div class="card mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Top Spending</h3>
+            <a href="{{ url_for('expenses.categories') }}" class="text-purple-600 text-sm font-medium">View All</a>
+        </div>
+        
+        <div class="grid grid-cols-5 gap-3 mb-4">
+            {% for category in category_stats[:5] %}
+            <div class="text-center">
+                <div class="category-icon mx-auto mb-2" style="background-color: {{ category.color }}20;">
+                    <i class="{{ category.icon }}" style="color: {{ category.color }}"></i>
+                </div>
+                <p class="text-xs text-gray-600 font-medium">{{ category.name[:6] }}</p>
+            </div>
+            {% else %}
+            <div class="col-span-5 text-center py-4">
+                <i class="fas fa-tags text-gray-300 text-2xl mb-2"></i>
+                <p class="text-sm text-gray-500">No categories yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Monthly Budget Progress -->
+    <div class="card mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Monthly Budget</h3>
+        
+        {% for category in category_stats[:3] %}
+        <div class="flex items-center justify-between mb-4 last:mb-0">
+            <div class="flex items-center space-x-3">
+                <div class="category-icon" style="background-color: {{ category.color }}20;">
+                    <i class="{{ category.icon }} text-sm" style="color: {{ category.color }}"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ category.name }}</p>
+                    <p class="text-xs text-gray-500">${{ "%.0f"|format(category.total) }} Per day</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-bold text-gray-900 text-sm">${{ "%.0f"|format(category.total) }}</p>
+                <div class="w-20 progress-bar mt-1">
+                    <div class="progress-fill" style="width: {{ (category.total / 1000 * 100) if category.total else 0 }}%; background: {{ category.color }};"></div>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-chart-bar text-gray-300 text-2xl mb-2"></i>
+            <p class="text-sm text-gray-500">No expenses yet</p>
+        </div>
+        {% endfor %}
     </div>
 
     <!-- Recent Transactions -->
-    <div class="card mb-8">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-            <button onclick="window.location.href='{{ url_for('expenses.list_expenses') }}'" class="text-sm text-blue-600 font-medium">See all</button>
+    <div class="card">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Transactions List</h3>
+            <a href="{{ url_for('expenses.list_expenses') }}" class="text-purple-600 text-sm font-medium">Weekly</a>
         </div>
-
-        {% if recent_expenses %}
-            <div class="space-y-4">
-                {% for expense in recent_expenses %}
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-16 hover:bg-gray-100 transition-colors">
-                    <div class="flex items-center">
-                        <div class="category-icon" style="background-color: {{ expense.color }}20;">
-                            <span style="color: {{ expense.color }}">{{ expense.icon }}</span>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-900 text-sm">
-                                {{ expense.description or expense.category_name }}
-                            </h4>
-                            <p class="text-xs text-gray-500">{{ expense.date }} • {{ expense.category_name }}</p>
-                        </div>
+        
+        <div class="space-y-3">
+            {% for expense in recent_expenses[:5] %}
+            <div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                <div class="flex items-center space-x-3">
+                    <div class="category-icon" style="background-color: {{ expense.category.color }}20;">
+                        <i class="{{ expense.category.icon }} text-sm" style="color: {{ expense.category.color }}"></i>
                     </div>
-                    <div class="flex items-center">
-                        <span class="font-bold text-gray-900">${{ "%.0f"|format(expense.amount) }}</span>
-                        <button class="ml-3 text-gray-400 hover:text-red-500 transition-colors" 
-                                onclick="deleteExpense({{ expense.id }})">
-                            <i class="fas fa-trash text-xs"></i>
-                        </button>
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">{{ expense.category.name }}</p>
+                        <p class="text-xs text-gray-500">{{ expense.date.strftime('%d %b, %Y') }}</p>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-receipt text-4xl mb-4 text-gray-300"></i>
-                <p class="mb-2">No transactions yet</p>
-                <p class="text-sm">Start by adding your first expense!</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Top Spend Areas -->
-    <div class="card mb-8">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Top Spend Areas</h3>
-            <i class="fas fa-search text-gray-400"></i>
-        </div>
-
-        {% if category_totals %}
-            <div class="space-y-4">
-                {% for category in category_totals[:4] %}
-                    {% if category.total > 0 %}
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="category-icon" style="background-color: {{ category.color }}20;">
-                                <i class="{{ category.icon }}" style="color: {{ category.color }}"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-900 text-sm">{{ category.name }}</h4>
-                                <div class="w-24 bg-gray-200 rounded-full h-2 mt-1">
-                                    {% set percentage = (category.total / monthly_total * 100) if monthly_total > 0 else 0 %}
-                                    <div class="h-2 rounded-full transition-all duration-500" 
-                                         style="width: {{ percentage }}%; background-color: {{ category.color }};">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="font-bold text-gray-900">${{ "%.0f"|format(category.total) }}</span>
-                    </div>
+                <div class="text-right">
+                    <p class="font-bold text-gray-900 text-sm">${{ "%.2f"|format(expense.amount) }}</p>
+                    {% if expense.description %}
+                    <p class="text-xs text-gray-500">{{ expense.description[:15] }}...</p>
                     {% endif %}
-                {% endfor %}
+                </div>
             </div>
-        {% endif %}
+            {% else %}
+            <div class="text-center py-6">
+                <i class="fas fa-receipt text-gray-300 text-3xl mb-3"></i>
+                <p class="text-gray-500 font-medium">No transactions yet</p>
+                <p class="text-sm text-gray-400 mb-4">Start tracking your expenses</p>
+                <a href="{{ url_for('expenses.add_expense') }}" class="btn-primary inline-block">
+                    <i class="fas fa-plus mr-2"></i>Add Expense
+                </a>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 
-    <!-- Quick Add Expense Button -->
-    <div class="fixed bottom-20 right-4 z-50">
-        <a href="{{ url_for('expenses.add_expense') }}" 
-           class="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300">
-            <i class="fas fa-plus text-white text-xl"></i>
-        </a>
-    </div>
 </div>
 
+<!-- Floating Action Button for Quick Add -->
+{% if recent_expenses %}
+<div class="fixed bottom-24 right-4 z-30">
+    <a href="{{ url_for('expenses.add_expense') }}" class="w-14 h-14 gradient-purple rounded-full flex items-center justify-center text-white shadow-2xl hover:shadow-purple-500/25 transition-all">
+        <i class="fas fa-plus text-lg"></i>
+    </a>
+</div>
+{% endif %}
+
 <script>
-function deleteExpense(expenseId) {
-    if (confirm('Delete this expense?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/expenses/delete/${expenseId}`;
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
+// Chart data for monthly expenses (placeholder for future Chart.js implementation)
+const monthlyData = {{ monthly_chart_data|tojson if monthly_chart_data else '[]' }};
 
-// Initialize progress animations
+// Add smooth animations
 document.addEventListener('DOMContentLoaded', function() {
-    // Animate progress ring
-    const progressRing = document.querySelector('.progress-ring-circle');
-    if (progressRing) {
-        setTimeout(() => {
-            progressRing.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
-        }, 500);
-    }
-
-    // Animate category progress bars
-    const progressBars = document.querySelectorAll('[style*="width:"]');
-    progressBars.forEach((bar, index) => {
+    // Animate cards on load
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('fade-in');
+    });
+    
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
         const width = bar.style.width;
         bar.style.width = '0%';
         setTimeout(() => {
             bar.style.width = width;
-        }, 800 + (index * 200));
+        }, 500);
     });
 });
 </script>
+
+<style>
+/* Additional dashboard-specific styles */
+.gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+}
+
+/* Smooth card animations */
+.card {
+    opacity: 0;
+    animation: slideUp 0.6s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced category icons */
+.category-icon {
+    transition: all 0.3s ease;
+}
+
+.category-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Custom progress bar animations */
+.progress-fill {
+    background: linear-gradient(90deg, currentColor 0%, currentColor 100%);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
 {% endblock %}
