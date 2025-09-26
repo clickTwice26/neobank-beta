@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="p-4 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Categories</h1>
+        <p class="text-gray-600">Manage your expense categories</p>
+    </div>
+
+    <!-- Add Category Form -->
+    <div class="card mb-6" x-data="{ showForm: false, selectedIcon: 'fas fa-folder', selectedColor: '#6B7280' }">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">
+                <i class="fas fa-plus mr-2 text-green-500"></i>
+                Add Category
+            </h3>
+            <button @click="showForm = !showForm" class="btn-secondary">
+                <i class="fas" :class="showForm ? 'fa-minus' : 'fa-plus'"></i>
+                <span x-text="showForm ? 'Cancel' : 'Add New'"></span>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('expenses.add_category') }}" x-show="showForm" x-transition class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Category Name -->
+                <div class="sm:col-span-2">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                    <input type="text" id="name" name="name" required maxlength="50" 
+                           class="form-input" placeholder="Enter category name">
+                </div>
+
+                <!-- Icon Picker -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+                    <input type="hidden" name="icon" x-model="selectedIcon">
+                    <div class="grid grid-cols-6 gap-2">
+                        {% set icons = [
+                            {'class': 'fas fa-utensils', 'name': 'dining'},
+                            {'class': 'fas fa-car', 'name': 'transport'},
+                            {'class': 'fas fa-shopping-bag', 'name': 'shopping'},
+                            {'class': 'fas fa-film', 'name': 'entertainment'},
+                            {'class': 'fas fa-lightbulb', 'name': 'utilities'},
+                            {'class': 'fas fa-hospital', 'name': 'health'},
+                            {'class': 'fas fa-book', 'name': 'education'},
+                            {'class': 'fas fa-plane', 'name': 'travel'},
+                            {'class': 'fas fa-home', 'name': 'housing'},
+                            {'class': 'fas fa-mobile-alt', 'name': 'phone'},
+                            {'class': 'fas fa-tshirt', 'name': 'clothing'},
+                            {'class': 'fas fa-gas-pump', 'name': 'fuel'},
+                            {'class': 'fas fa-dollar-sign', 'name': 'money'},
+                            {'class': 'fas fa-bullseye', 'name': 'target'},
+                            {'class': 'fas fa-palette', 'name': 'art'},
+                            {'class': 'fas fa-running', 'name': 'fitness'}
+                        ] %}
+                        {% for icon in icons %}
+                        <button type="button" 
+                                @click="selectedIcon = '{{ icon.class }}'"
+                                class="w-10 h-10 flex items-center justify-center rounded-lg border-2 transition-colors"
+                                :class="selectedIcon === '{{ icon.class }}' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
+                            <i class="{{ icon.class }} text-gray-600"></i>
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2 text-center">
+                        <span class="text-2xl" x-text="selectedIcon"></span>
+                        <p class="text-xs text-gray-500 mt-1">Selected Icon</p>
+                    </div>
+                </div>
+
+                <!-- Color Picker -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                    <input type="hidden" name="color" x-model="selectedColor">
+                    <div class="grid grid-cols-4 gap-2">
+                        {% set colors = ['#EF4444', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#06B6D4', '#6366F1'] %}
+                        {% for color in colors %}
+                        <button type="button" 
+                                @click="selectedColor = '{{ color }}'"
+                                class="w-10 h-10 rounded-lg border-2 transition-colors"
+                                :class="selectedColor === '{{ color }}' ? 'border-gray-800' : 'border-gray-200'"
+                                style="background-color: {{ color }}">
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2 text-center">
+                        <div class="w-8 h-8 rounded-lg mx-auto" :style="'background-color: ' + selectedColor"></div>
+                        <p class="text-xs text-gray-500 mt-1" x-text="selectedColor"></p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary w-full">
+                <i class="fas fa-plus mr-2"></i>
+                Add Category
+            </button>
+        </form>
+    </div>
+
+    <!-- Categories List -->
+    {% if categories %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for category in categories %}
+        <div class="card hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-3"
+                         style="background-color: {{ category.color }}20; color: {{ category.color }}">
+                        <i class="{{ category.icon }} text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">{{ category.name }}</h4>
+                        <p class="text-sm text-gray-500">ID: {{ category.id }}</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div class="w-4 h-4 rounded-full mb-1" style="background-color: {{ category.color }}"></div>
+                    <button class="text-gray-400 hover:text-red-500 text-sm" 
+                            onclick="if(confirm('Delete this category? This cannot be undone.')) { /* Add delete functionality */ }">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card text-center py-12">
+        <div class="text-6xl mb-4">📂</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No categories yet</h3>
+        <p class="text-gray-600 mb-6">
+            Categories help you organize your expenses. Create your first category to get started!
+        </p>
+        <button @click="showForm = true" class="btn-primary">
+            <i class="fas fa-plus mr-2"></i>
+            Create First Category
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Category Tips -->
+    <div class="card bg-blue-50 border-blue-200 mt-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-2">
+            <i class="fas fa-lightbulb mr-2"></i>
+            Tips for Categories
+        </h3>
+        <div class="text-sm text-blue-800 space-y-2">
+            <p>• <strong>Keep it simple:</strong> Use broad categories like "Food", "Transport", "Entertainment"</p>
+            <p>• <strong>Be consistent:</strong> Stick to the same categories to track patterns over time</p>
+            <p>• <strong>Use colors wisely:</strong> Similar categories can use similar colors for better organization</p>
+            <p>• <strong>Add icons:</strong> Visual icons make it easier to quickly identify categories</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    if (!name) {
+        e.preventDefault();
+        alert('Please enter a category name');
+        return;
+    }
+    
+    if (name.length < 2) {
+        e.preventDefault();
+        alert('Category name must be at least 2 characters long');
+        return;
+    }
+});
+
+// Auto-focus on name field when form is shown
+document.addEventListener('alpine:init', () => {
+    Alpine.data('categoryForm', () => ({
+        showForm: false,
+        selectedIcon: 'fas fa-folder',
+        selectedColor: '#6B7280'
+    }));
+});
+</script>
+{% endblock %}

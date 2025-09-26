@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <div class="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-chart-line text-2xl text-indigo-600"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+            <p class="text-gray-600">Sign in to your expense tracker</p>
+        </div>
+
+        <form method="POST" class="mt-8 space-y-6">
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="sr-only">Username or Email</label>
+                    <input id="username" name="username" type="text" required 
+                           class="form-input" 
+                           placeholder="Username or Email"
+                           autocomplete="username">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" required 
+                           class="form-input" 
+                           placeholder="Password"
+                           autocomplete="current-password">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="btn-primary w-full">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </button>
+            </div>
+
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account?
+                    <a href="{{ url_for('auth.register') }}" class="text-blue-600 hover:text-blue-500 font-medium">
+                        Sign up here
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-focus on first input
+document.getElementById('username').focus();
+
+// Form validation feedback
+document.querySelector('form').addEventListener('submit', function(e) {
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+});
+</script>
+{% endblock %}

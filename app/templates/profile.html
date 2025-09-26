@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="p-4 max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6 text-center">
+        <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user text-3xl text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ user.username }}</h1>
+        <p class="text-gray-600">{{ user.email }}</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="card bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <div class="text-center">
+                <div class="mb-3">
+                    <i class="fas fa-receipt text-3xl"></i>
+                </div>
+                <p class="text-lg font-semibold">Total Expenses</p>
+                <p class="text-2xl font-bold">{{ total_expenses }}</p>
+            </div>
+        </div>
+        
+        <div class="card bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+            <div class="text-center">
+                <div class="mb-3">
+                    <i class="fas fa-dollar-sign text-3xl"></i>
+                </div>
+                <p class="text-lg font-semibold">Total Amount</p>
+                <p class="text-2xl font-bold">${{ "%.2f"|format(total_amount) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Information -->
+    <div class="card mb-6">
+        <h3 class="text-lg font-semibold mb-4">
+            <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+            Account Information
+        </h3>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                <div>
+                    <p class="font-medium text-gray-900">Username</p>
+                    <p class="text-sm text-gray-600">Your unique identifier</p>
+                </div>
+                <p class="text-gray-900">{{ user.username }}</p>
+            </div>
+            
+            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                <div>
+                    <p class="font-medium text-gray-900">Email Address</p>
+                    <p class="text-sm text-gray-600">Your account email</p>
+                </div>
+                <p class="text-gray-900">{{ user.email }}</p>
+            </div>
+            
+            <div class="flex justify-between items-center py-3">
+                <div>
+                    <p class="font-medium text-gray-900">Member Since</p>
+                    <p class="text-sm text-gray-600">Account creation date</p>
+                </div>
+                <p class="text-gray-900">{{ user.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-6">
+        <h3 class="text-lg font-semibold mb-4">
+            <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+            Quick Actions
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <a href="{{ url_for('expenses.add_expense') }}" class="flex items-center p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                <i class="fas fa-plus mr-3 text-lg"></i>
+                <div>
+                    <p class="font-medium">Add Expense</p>
+                    <p class="text-sm opacity-75">Record new expense</p>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('expenses.categories') }}" class="flex items-center p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors">
+                <i class="fas fa-tags mr-3 text-lg"></i>
+                <div>
+                    <p class="font-medium">Manage Categories</p>
+                    <p class="text-sm opacity-75">Edit categories</p>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('expenses.list_expenses') }}" class="flex items-center p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">
+                <i class="fas fa-list mr-3 text-lg"></i>
+                <div>
+                    <p class="font-medium">View History</p>
+                    <p class="text-sm opacity-75">All expenses</p>
+                </div>
+            </a>
+            
+            <button onclick="exportData()" class="flex items-center p-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors">
+                <i class="fas fa-download mr-3 text-lg"></i>
+                <div>
+                    <p class="font-medium">Export Data</p>
+                    <p class="text-sm opacity-75">Download CSV</p>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- App Information -->
+    <div class="card mb-6">
+        <h3 class="text-lg font-semibold mb-4">
+            <i class="fas fa-mobile-alt mr-2 text-indigo-500"></i>
+            App Information
+        </h3>
+        <div class="space-y-3 text-sm text-gray-600">
+            <div class="flex justify-between">
+                <span>Version</span>
+                <span class="font-medium">1.0.0</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Platform</span>
+                <span class="font-medium">Mobile Web App</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Last Updated</span>
+                <span class="font-medium">September 2025</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card mb-6" x-data="{ showSettings: false }">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">
+                <i class="fas fa-cog mr-2 text-gray-500"></i>
+                Settings
+            </h3>
+            <button @click="showSettings = !showSettings" class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-chevron-down" :class="showSettings ? 'rotate-180' : ''"></i>
+            </button>
+        </div>
+        
+        <div x-show="showSettings" x-transition class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-gray-900">Dark Mode</p>
+                    <p class="text-sm text-gray-600">Toggle dark theme</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" onchange="toggleDarkMode()">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-gray-900">Notifications</p>
+                    <p class="text-sm text-gray-600">Push notifications</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="card">
+        <button onclick="confirmLogout()" class="w-full flex items-center justify-center p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <i class="fas fa-sign-out-alt mr-2"></i>
+            Logout
+        </button>
+    </div>
+</div>
+
+<script>
+function confirmLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = "{{ url_for('auth.logout') }}";
+    }
+}
+
+function exportData() {
+    // This would typically make an API call to get CSV data
+    alert('Export feature coming soon! This will download your expense data as a CSV file.');
+}
+
+function toggleDarkMode() {
+    // This would toggle dark mode classes
+    alert('Dark mode feature coming soon!');
+}
+
+// Add install prompt for PWA
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install banner
+    const installBanner = document.createElement('div');
+    installBanner.className = 'fixed top-20 left-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50';
+    installBanner.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">Install App</p>
+                <p class="text-sm opacity-90">Add to home screen for better experience</p>
+            </div>
+            <button onclick="installApp()" class="bg-white text-blue-500 px-3 py-1 rounded text-sm font-medium">
+                Install
+            </button>
+        </div>
+    `;
+    document.body.appendChild(installBanner);
+    
+    setTimeout(() => {
+        installBanner.remove();
+    }, 10000);
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+</script>
+{% endblock %}
